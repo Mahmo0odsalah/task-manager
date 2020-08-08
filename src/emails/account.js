@@ -14,7 +14,7 @@ export const sendWelcomeEmail = (email, name) => {
     text: `Welcome to the team, ${name}!`,
   };
   mg.messages().send(data, function (error, body) {
-    console.log(body);
+    // console.log(body);
   });
 };
 
@@ -26,7 +26,7 @@ export const sendCancellationEmail = (to, name) => {
     text: `Goodbye ${name}, you're gonna regret it bitch`,
   };
   mg.messages().send(data, function (error, body) {
-    console.log(body);
+    // console.log(body);
   });
 };
 

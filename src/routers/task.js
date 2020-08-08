@@ -1,7 +1,7 @@
 import express from "express";
 import Task from "../models/task.js";
 import auth from "../middleware/auth.js";
-import User from "../models/user.js";
+import { checkCache, setCache } from "../middleware/cache.js";
 
 const router = express.Router();
 
@@ -48,13 +48,14 @@ router.get("/tasks", auth, async (req, res) => {
   }
 });
 
-router.get("/tasks/:id", auth, async (req, res) => {
+router.get("/tasks/:id", auth, checkCache, async (req, res) => {
   const _id = req.params.id;
   try {
     const task = await Task.findOne({ _id, owner: req.user._id });
     if (!task) {
       res.status(404).send(task);
     }
+    setCache(_id, task);
     res.send(task);
   } catch (error) {
     res.status(400).send(error);
