@@ -14,4 +14,8 @@ const setCache = async (key, value) => {
   await client.expire(key, 120);
 };
 
-export { checkCache, setCache };
+const deletCache = async (key) => {
+  await client.del(key);
+};
+
+export { checkCache, setCache, deletCache };

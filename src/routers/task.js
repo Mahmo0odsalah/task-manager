@@ -1,7 +1,7 @@
 import express from "express";
 import Task from "../models/task.js";
 import auth from "../middleware/auth.js";
-import { checkCache, setCache } from "../middleware/cache.js";
+import { checkCache, setCache, deletCache } from "../middleware/cache.js";
 
 const router = express.Router();
 
@@ -9,6 +9,7 @@ router.post("/tasks", auth, async (req, res) => {
   const task = new Task({ ...req.body, owner: req.user._id });
   try {
     await task.save();
+    setCache(task._id, task);
     res.status(201).send(task);
   } catch (error) {
     res.status(400).send(error);
@@ -82,6 +83,7 @@ router.patch("/tasks/:id", auth, async (req, res) => {
       task[update] = req.body[update];
     });
     await task.save();
+    setCache(_id, task);
     return res.send(task);
   } catch (error) {
     return res.status(400).send(error);
@@ -95,6 +97,7 @@ router.delete("/tasks/:id", auth, async (req, res) => {
     if (!task) {
       return res.status(404).send();
     }
+    deletCache(_id);
     res.send(task);
   } catch (error) {
     res.status(400).send(error);
