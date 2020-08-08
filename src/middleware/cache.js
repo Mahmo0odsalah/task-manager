@@ -2,6 +2,7 @@ import client from "../caching/redis.js";
 
 const checkCache = async (req, res, next) => {
   client.get(req.params.id, (err, reply) => {
+    console.log(reply);
     if (reply) {
       return res.send(JSON.parse(reply));
     }
@@ -10,12 +11,12 @@ const checkCache = async (req, res, next) => {
 };
 
 const setCache = async (key, value) => {
-  await client.set(key, JSON.stringify(value));
-  await client.expire(key, 120);
+  client.set(String(key), JSON.stringify(value));
+  client.expire(String(key), 120);
 };
 
 const deletCache = async (key) => {
-  await client.del(key);
+  client.del(key);
 };
 
 export { checkCache, setCache, deletCache };
