@@ -48,7 +48,7 @@ router.get("/tasks", auth, async (req, res) => {
   }
 });
 
-router.get("/tasks/:id", checkCache, auth, async (req, res) => {
+router.get("/tasks/:id", auth, async (req, res) => {
   const _id = req.params.id;
   try {
     let task = await Task.findOne({ _id, owner: req.user._id });
@@ -57,13 +57,18 @@ router.get("/tasks/:id", checkCache, auth, async (req, res) => {
     }
     const task_date = new Date(task.createdAt);
     const url = `https://byabbe.se/on-this-day/${task_date.getMonth()}/${task_date.getDay()}/events.json`;
-    axios.get(url).then((response) => {
-      const onThisDay = response.data.events[0];
-      task = { onThisDay, ...task._doc };
-      console.log({ task });
-      setCache(_id, task);
-      res.send(task);
-    });
+    const cachedOnThisDay = await checkCache(url);
+    if (!cachedOnThisDay) {
+      axios.get(url).then((response) => {
+        const onThisDay = response.data.events[0];
+        task = { onThisDay, ...task._doc };
+        setCache(url, onThisDay);
+        return res.send(task);
+      });
+    } else {
+      task = { onThisDay: cachedOnThisDay, ...task._doc };
+      return res.send(task);
+    }
   } catch (error) {
     res.status(400).send(error);
   }

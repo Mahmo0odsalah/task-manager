@@ -1,12 +1,12 @@
 import client from "../caching/redis.js";
 
-const checkCache = async (req, res, next) => {
-  client.get(req.params.id, (err, reply) => {
-    console.log(reply);
+const checkCache = async (key) => {
+  client.get(key, (err, reply) => {
     if (reply) {
-      return res.send(JSON.parse(reply));
+      console.log(reply);
+      return JSON.parse(reply);
     }
-    next();
+    return null;
   });
 };
 
