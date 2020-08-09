@@ -56,19 +56,30 @@ router.get("/tasks/:id", auth, async (req, res) => {
       res.status(404).send(task);
     }
     const task_date = new Date(task.createdAt);
-    const url = `https://byabbe.se/on-this-day/${task_date.getMonth()}/${task_date.getDay()}/events.json`;
-    const cachedOnThisDay = await checkCache(url);
-    if (!cachedOnThisDay) {
-      axios.get(url).then((response) => {
-        const onThisDay = response.data.events[0];
-        task = { onThisDay, ...task._doc };
-        setCache(url, onThisDay);
+    const url = `https://byabbe.se/on-this-day/${
+      task_date.getMonth() + 1
+    }/${task_date.getDate()}/events.json`;
+    checkCache(`${task_date.getMonth() + 1}_${task_date.getDate()}`)
+      .then((reply) => {
+        task = { onThisDay: JSON.parse(reply), ...task._doc };
         return res.send(task);
+      })
+      .catch((err) => {
+        axios
+          .get(url)
+          .then(async (response) => {
+            const onThisDay = response.data.events[0];
+            task = { onThisDay, ...task._doc };
+            await setCache(
+              `${task_date.getMonth() + 1}_${task_date.getDate()}`,
+              JSON.stringify(onThisDay)
+            );
+            return res.send(task);
+          })
+          .catch((err) => {
+            return res.status(500).send(err);
+          });
       });
-    } else {
-      task = { onThisDay: cachedOnThisDay, ...task._doc };
-      return res.send(task);
-    }
   } catch (error) {
     res.status(400).send(error);
   }

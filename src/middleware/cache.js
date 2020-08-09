@@ -1,18 +1,19 @@
 import client from "../caching/redis.js";
 
-const checkCache = async (key) => {
-  client.get(key, (err, reply) => {
-    if (reply) {
-      console.log(reply);
-      return JSON.parse(reply);
-    }
-    return null;
+const checkCache = (key) => {
+  return new Promise((resolve, reject) => {
+    client.get(key, (err, reply) => {
+      if (reply) {
+        resolve(reply);
+      }
+      reject(err);
+    });
   });
 };
 
 const setCache = async (key, value) => {
-  client.set(String(key), JSON.stringify(value));
-  client.expire(String(key), 120);
+  client.set(key, value);
+  client.expire(key, 120);
 };
 
 const deletCache = async (key) => {
